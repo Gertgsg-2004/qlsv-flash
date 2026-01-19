@@ -8,7 +8,7 @@
       {{ form.hidden_tag() }}
 
       <div class="mb-3">
-        {{ form.ma_sv.label }}
+        {{ form.ma_sv.label(class="form-label") }}
         {{ form.ma_sv(class="form-control") }}
         {% for e in form.ma_sv.errors %}
           <div class="text-danger">{{ e }}</div>
@@ -16,18 +16,52 @@
       </div>
 
       <div class="mb-3">
-        {{ form.ten_sv.label }}
+        {{ form.ten_sv.label(class="form-label") }}
         {{ form.ten_sv(class="form-control") }}
+        {% for e in form.ten_sv.errors %}
+          <div class="text-danger">{{ e }}</div>
+        {% endfor %}
       </div>
 
       <div class="mb-3">
-        {{ form.email.label }}
+        {{ form.email.label(class="form-label") }}
         {{ form.email(class="form-control") }}
+        {% for e in form.email.errors %}
+          <div class="text-danger">{{ e }}</div>
+        {% endfor %}
       </div>
 
       <div class="mb-3">
-        {{ form.mat_khau.label }}
+        {{ form.mat_khau.label(class="form-label") }}
         {{ form.mat_khau(class="form-control") }}
+        {% for e in form.mat_khau.errors %}
+          <div class="text-danger">{{ e }}</div>
+        {% endfor %}
+      </div>
+
+      <!-- ✅ THÊM GIỚI TÍNH -->
+      <div class="mb-3">
+        {{ form.gioi_tinh.label(class="form-label") }}
+        <div class="d-flex gap-3">
+          {% for subfield in form.gioi_tinh %}
+            <div class="form-check">
+              {{ subfield(class="form-check-input") }}
+              {{ subfield.label(class="form-check-label") }}
+            </div>
+          {% endfor %}
+        </div>
+        {% for e in form.gioi_tinh.errors %}
+          <div class="text-danger">{{ e }}</div>
+        {% endfor %}
+      </div>
+
+      <!-- ✅ THÊM ĐỊA CHỈ -->
+      <div class="mb-3">
+        {{ form.dia_chi.label(class="form-label") }}
+        {{ form.dia_chi(class="form-control", rows="2", placeholder="Nhập địa chỉ...") }}
+        {% for e in form.dia_chi.errors %}
+          <div class="text-danger">{{ e }}</div>
+        {% endfor %}
       </div>
 
       <button class="btn btn-primary">Đăng ký</button>
