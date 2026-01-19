@@ -29,6 +29,8 @@ from wtforms import StringField, PasswordField, RadioField, TextAreaField, Submi
 from wtforms.validators import DataRequired, Email, Optional as Opt, Length, ValidationError
 
 from extensions import db, bcrypt, csrf  # ✅ chỉ dùng extensions
+from account_routes import account_bp
+
 
 # -------------------------
 # App setup
@@ -91,6 +93,7 @@ app.register_blueprint(admin_bp)
 app.register_blueprint(manager_bp)
 app.register_blueprint(student_bp)
 app.register_blueprint(auth_bp)
+app.register_blueprint(account_bp)
 
 
 # -------------------------
@@ -696,3 +699,10 @@ def not_found(_):
 
 if __name__ == "__main__":
     app.run(debug=True)
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024  # 2MB
