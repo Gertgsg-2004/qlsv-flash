@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% set title="Đăng nhập" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card text-dark">
+      <div class="card-header"><b>Đăng nhập</b></div>
+      <div class="card-body">
+
+        <form method="POST" action="{{ url_for('auth.login') }}">
+          {# CSRF: nếu bạn bật CSRFProtect thì csrf_token() có, không có thì bỏ qua #}
+          {% if csrf_token is defined %}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label">Mã SV hoặc Email</label>
+            <input
+              name="identifier"
+              class="form-control"
+              placeholder="Nhập mã SV hoặc email"
+              required
+            >
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Mật khẩu</label>
+            <input
+              name="password"
+              type="password"
+              class="form-control"
+              placeholder="Nhập mật khẩu"
+              required
+            >
+          </div>
+
+          <div class="d-flex align-items-center gap-3">
+            <button type="submit" class="btn btn-primary">Đăng nhập</button>
+            <a href="{{ url_for('register') }}">Đăng ký</a>
+            <a href="{{ url_for('forgot') }}">Quên mật khẩu?</a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

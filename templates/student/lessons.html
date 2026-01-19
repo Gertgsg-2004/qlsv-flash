@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% set title="Bài học" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>📚 Bài học</b>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('student.student_home') }}">⬅ Về Home</a>
+  </div>
+
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="GET">
+      <div class="col-md-8">
+        <select class="form-select" name="subject_id">
+          <option value="">-- Tất cả môn học --</option>
+          {% for s in subjects %}
+            <option value="{{ s.id }}" {% if subject_id==s.id %}selected{% endif %}>
+              {{ s.code }} - {{ s.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4 d-flex gap-2">
+        <button class="btn btn-primary">Lọc</button>
+        <a class="btn btn-secondary" href="{{ url_for('student.student_lessons') }}">Reset</a>
+      </div>
+    </form>
+
+    <div class="list-group">
+      {% for l in lessons %}
+        <div class="list-group-item">
+          <div class="d-flex justify-content-between">
+            <b>#{{ l.order_no }} - {{ l.title }}</b>
+            <span class="text-muted">{{ l.subject.code }}</span>
+          </div>
+          {% if l.content %}
+            <div class="mt-2">{{ l.content }}</div>
+          {% endif %}
+          {% if l.video_url %}
+            <div class="mt-2">
+              <a href="{{ l.video_url }}" target="_blank">🎬 Video</a>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      {% if lessons|length == 0 %}
+        <div class="text-muted">Chưa có bài học.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

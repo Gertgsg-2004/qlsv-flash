@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% set title = "Quản lý lớp học" %}
+{% block content %}
+
+<div class="card text-dark">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>Quản lý lớp học</b>
+    <a class="btn btn-success btn-sm" href="{{ url_for('admin.admin_class_create') }}">+ Thêm lớp</a>
+  </div>
+
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="GET">
+      <div class="col-md-6">
+        <input class="form-control" name="q" placeholder="Tìm theo code / tên lớp..." value="{{ q }}">
+      </div>
+      <div class="col-md-6 d-flex gap-2">
+        <button class="btn btn-primary">Tìm</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin.admin_classes') }}">Reset</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Code</th>
+            <th>Tên lớp</th>
+            <th>Môn học</th>
+            <th>Mô tả</th>
+            <th style="width:160px;">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in classes %}
+          <tr>
+            <td>{{ c.id }}</td>
+            <td><b>{{ c.code }}</b></td>
+            <td>{{ c.name }}</td>
+            <td>
+              {% if c.subjects %}
+                {% for s in c.subjects %}
+                  <span class="badge bg-primary">{{ s.code }}</span>
+                {% endfor %}
+              {% else %}
+                <span class="text-muted">(chưa gán)</span>
+              {% endif %}
+            </td>
+            <td>{{ c.description or "" }}</td>
+            <td>
+              <a class="btn btn-sm btn-secondary"
+                 href="{{ url_for('admin.admin_class_edit', class_id=c.id) }}">Sửa</a>
+
+              <form method="POST"
+                    action="{{ url_for('admin.admin_class_delete', class_id=c.id) }}"
+                    style="display:inline;">
+                {{ form_csrf_token()|safe }}
+                <button class="btn btn-sm btn-danger"
+                        onclick="return confirm('Xoá lớp này?')">Xoá</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+
+          {% if classes|length == 0 %}
+          <tr><td colspan="6" class="text-center text-muted">Chưa có lớp</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% set title="Bảng điểm (Giáo viên)" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>Quản lý bảng điểm</b>
+    <a class="btn btn-success btn-sm" href="{{ url_for('manager.manager_grade_create') }}">
+      + Thêm điểm
+    </a>
+  </div>
+
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="get" action="{{ url_for('manager.manager_grades') }}">
+      <div class="col-md-4">
+        <input class="form-control" name="student_q" value="{{ student_q or '' }}"
+               placeholder="Tìm theo mã SV / tên / email">
+      </div>
+
+      <div class="col-md-3">
+        <select class="form-select" name="subject_id">
+          <option value="">-- Chọn môn --</option>
+          {% for s in subjects %}
+            <option value="{{ s.id }}" {% if subject_id and (subject_id|string) == (s.id|string) %}selected{% endif %}>
+              {{ s.code }} - {{ s.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <select class="form-select" name="exam_id">
+          <option value="">-- Chọn kỳ thi --</option>
+          {% for e in exams %}
+            <option value="{{ e.id }}" {% if exam_id and (exam_id|string) == (e.id|string) %}selected{% endif %}>
+              {{ e.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-2 d-flex gap-2">
+        <button class="btn btn-primary w-100">Lọc</button>
+        <a class="btn btn-secondary w-100" href="{{ url_for('manager.manager_grades') }}">Reset</a>
+      </div>
+
+      <div class="col-12">
+        <a class="btn btn-outline-dark btn-sm" href="{{ url_for('manager.manager_home') }}">← Về Home</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th style="width:70px">ID</th>
+            <th>Sinh viên</th>
+            <th>Môn</th>
+            <th>Kỳ thi</th>
+            <th style="width:90px">Điểm</th>
+            <th>Ghi chú</th>
+            <th style="width:160px">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if grades and grades|length > 0 %}
+            {% for g in grades %}
+              <tr>
+                <td>{{ g.id }}</td>
+
+                <td>
+                  {% if g.student %}
+                    <b>{{ g.student.ma_sv }}</b> - {{ g.student.ten_sv }}<br>
+                    <small class="text-muted">{{ g.student.email }}</small>
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if g.subject %}
+                    {{ g.subject.code }} - {{ g.subject.name }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if g.exam %}
+                    {{ g.exam.name }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+
+                <td>
+                  <span class="badge bg-success">{{ g.score }}</span>
+                </td>
+
+                <td>{{ g.note or "" }}</td>
+
+                <td>
+                  <a class="btn btn-secondary btn-sm"
+                     href="{{ url_for('manager.manager_grade_edit', grade_id=g.id) }}">
+                    Sửa
+                  </a>
+
+                  <form method="post"
+                        action="{{ url_for('manager.manager_grade_delete', grade_id=g.id) }}"
+                        style="display:inline"
+                        onsubmit="return confirm('Xoá điểm này?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-danger btn-sm">Xoá</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center text-muted">
+                Chưa có dữ liệu.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% set title="Đặt lại mật khẩu" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card text-dark">
+      <div class="card-header"><b>Đặt lại mật khẩu</b></div>
+      <div class="card-body">
+        <form method="POST">
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(class="form-control") }}
+            {% for e in form.password.errors %}<div class="text-danger">{{ e }}</div>{% endfor %}
+          </div>
+
+          {{ form.submit(class="btn btn-primary") }}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

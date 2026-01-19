@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% set title="Danh sách sinh viên" %}
+{% block content %}
+<div class="card text-dark">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>Danh sách sinh viên</b>
+    <div class="d-flex gap-2">
+      <a class="btn btn-success btn-sm" href="{{ url_for('students_create') }}">Thêm sinh viên</a>
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('students_export') }}">Export</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('students_import') }}">Import</a>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Search -->
+    <form class="row g-2 mb-3" method="GET">
+      <div class="col-md-3">
+        <input class="form-control" name="ma_sv" placeholder="Mã SV" value="{{ ma_sv }}">
+      </div>
+      <div class="col-md-4">
+        <input class="form-control" name="ten_sv" placeholder="Tên SV" value="{{ ten_sv }}">
+      </div>
+      <div class="col-md-2">
+        <select class="form-select" name="per_page">
+          <option value="5"  {% if per_page==5 %}selected{% endif %}>5</option>
+          <option value="10" {% if per_page==10 %}selected{% endif %}>10</option>
+          <option value="20" {% if per_page==20 %}selected{% endif %}>20</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-primary">Lọc</button>
+        <a class="btn btn-secondary" href="{{ url_for('students_index') }}">Reset</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th style="width:70px;">ID</th>
+            <th style="width:260px;">Avatar</th>
+            <th>Mã SV</th>
+            <th>Tên</th>
+            <th>Email</th>
+            <th style="width:110px;">Giới tính</th>
+            <th>Địa chỉ</th>
+            <th style="width:150px;">Hành động</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for s in students %}
+          <tr>
+            <td>{{ s.id }}</td>
+
+            <!-- Avatar riêng từng sinh viên -->
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                {% if s.avatar %}
+                  <img
+                    src="{{ url_for('static', filename='uploads/' ~ s.avatar) }}"
+                    width="44" height="44"
+                    style="border-radius:50%;object-fit:cover;"
+                    alt="avatar">
+                {% else %}
+                  <div style="width:44px;height:44px;border-radius:50%;background:#ddd;"></div>
+                {% endif %}
+
+                <form
+                  method="POST"
+                  action="{{ url_for('student_upload_avatar', student_id=s.id) }}"
+                  enctype="multipart/form-data"
+                  class="d-flex gap-1 align-items-center"
+                >
+                  {{ form_csrf_token()|safe }}
+                  <input
+                    type="file"
+                    name="avatar"
+                    class="form-control form-control-sm"
+                    accept=".png,.jpg,.jpeg,.webp"
+                    required
+                    style="max-width:160px;"
+                  >
+                  <button class="btn btn-sm btn-warning" type="submit">Up</button>
+                </form>
+              </div>
+              <small class="text-muted">PNG/JPG/WEBP</small>
+            </td>
+
+            <td>{{ s.ma_sv }}</td>
+            <td>{{ s.ten_sv }}</td>
+            <td>{{ s.email }}</td>
+            <td>{{ s.gioi_tinh or "" }}</td>
+            <td>{{ s.dia_chi or "" }}</td>
+
+            <td>
+              <a class="btn btn-sm btn-secondary" href="{{ url_for('students_edit', student_id=s.id) }}">Sửa</a>
+              <form method="POST" action="{{ url_for('students_delete', student_id=s.id) }}" style="display:inline;">
+                {{ form_csrf_token()|safe }}
+                <button class="btn btn-sm btn-danger" onclick="return confirm('Xóa sinh viên này?')">Xóa</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+
+          {% if students|length == 0 %}
+          <tr>
+            <td colspan="8" class="text-center text-muted">Không có dữ liệu</td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav>
+      <ul class="pagination">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+          <a class="page-link"
+             href="{{ url_for('students_index', page=pagination.prev_num, ma_sv=ma_sv, ten_sv=ten_sv, per_page=per_page) }}">Previous</a>
+        </li>
+
+        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+          {% if p %}
+            <li class="page-item {% if p==pagination.page %}active{% endif %}">
+              <a class="page-link"
+                 href="{{ url_for('students_index', page=p, ma_sv=ma_sv, ten_sv=ten_sv, per_page=per_page) }}">{{ p }}</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+          <a class="page-link"
+             href="{{ url_for('students_index', page=pagination.next_num, ma_sv=ma_sv, ten_sv=ten_sv, per_page=per_page) }}">Next</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+{% endblock %}

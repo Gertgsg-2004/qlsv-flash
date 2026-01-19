@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% set title = "Quản lý kỳ thi" %}
+{% block content %}
+
+<div class="card text-dark">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>Quản lý kỳ thi</b>
+    <a class="btn btn-success btn-sm" href="{{ url_for('admin.admin_exam_create') }}">+ Thêm kỳ thi</a>
+  </div>
+
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="GET">
+      <div class="col-md-6">
+        <input class="form-control" name="q" placeholder="Tìm theo tên kỳ thi / môn học..." value="{{ q }}">
+      </div>
+      <div class="col-md-6 d-flex gap-2">
+        <button class="btn btn-primary">Tìm</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin.admin_exams') }}">Reset</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Tên kỳ thi</th>
+            <th>Môn học</th>
+            <th>Ngày thi</th>
+            <th>Mô tả</th>
+            <th style="width:160px;">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in exams %}
+          <tr>
+            <td>{{ e.id }}</td>
+            <td><b>{{ e.name }}</b></td>
+            <td>
+              <span class="badge bg-primary">{{ e.subject.code }}</span>
+              {{ e.subject.name }}
+            </td>
+            <td>{{ e.exam_date or "" }}</td>
+            <td>{{ e.description or "" }}</td>
+            <td>
+              <a class="btn btn-sm btn-secondary"
+                 href="{{ url_for('admin.admin_exam_edit', exam_id=e.id) }}">Sửa</a>
+
+              <form method="POST"
+                    action="{{ url_for('admin.admin_exam_delete', exam_id=e.id) }}"
+                    style="display:inline;">
+                {{ form_csrf_token()|safe }}
+                <button class="btn btn-sm btn-danger"
+                        onclick="return confirm('Xoá kỳ thi này?')">Xoá</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+
+          {% if exams|length == 0 %}
+          <tr><td colspan="6" class="text-center text-muted">Chưa có kỳ thi</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

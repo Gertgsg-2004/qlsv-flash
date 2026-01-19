@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% set title="Gán lớp cho giáo viên" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header"><b>Gán lớp cho giáo viên</b></div>
+  <div class="card-body">
+
+    {% if teachers|length == 0 %}
+      <div class="text-muted">Chưa có tài khoản role=manager (giáo viên).</div>
+    {% endif %}
+
+    {% for t in teachers %}
+      <form class="border rounded p-3 mb-3"
+            method="POST"
+            action="{{ url_for('admin.admin_teacher_update_classes', teacher_id=t.id) }}">
+        {{ form_csrf_token()|safe }}
+
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <b>{{ t.ten_sv }}</b> <span class="text-muted">({{ t.email }})</span>
+            <div class="text-muted">ID: {{ t.id }}</div>
+          </div>
+
+          <button class="btn btn-primary btn-sm">Lưu</button>
+        </div>
+
+        <hr class="my-2">
+
+        <div class="row">
+          {% for c in classes %}
+            <div class="col-md-4">
+              <label class="form-check-label d-flex gap-2 align-items-center">
+                <input class="form-check-input"
+                       type="checkbox"
+                       name="class_ids"
+                       value="{{ c.id }}"
+                       {% if c in t.teaching_classes %}checked{% endif %}>
+                <span>{{ c.code }} - {{ c.name }}</span>
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+      </form>
+    {% endfor %}
+
+  </div>
+</div>
+
+{% endblock %}

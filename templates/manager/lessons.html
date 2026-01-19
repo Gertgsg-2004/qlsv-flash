@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% set title="Bài học (Giáo viên)" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>Danh sách bài học</b>
+
+    <a class="btn btn-success"
+       href="{{ url_for('manager.manager_lessons_create') }}">
+      + Thêm bài học
+    </a>
+  </div>
+
+  <div class="card-body">
+
+    <!-- FILTER -->
+    <form class="d-flex justify-content-end gap-2 mb-3" method="GET">
+      <select class="form-select" name="subject_id" style="max-width:220px;">
+        <option value="">-- Tất cả môn --</option>
+        {% for s in subjects %}
+          <option value="{{ s.id }}" {% if subject_id == s.id %}selected{% endif %}>
+            {{ s.code }} - {{ s.name }}
+          </option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Lọc</button>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th style="width:80px;">ID</th>
+            <th>Môn</th>
+            <th style="width:120px;">Thứ tự</th>
+            <th>Tiêu đề</th>
+            <th>Video</th>
+            <th style="width:160px;">Hành động</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% if lessons %}
+            {% for l in lessons %}
+              <tr>
+                <td>{{ l.id }}</td>
+                <td>
+                  {% if l.subject %}
+                    {{ l.subject.code }} - {{ l.subject.name }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>{{ l.order_no }}</td>
+                <td>{{ l.title }}</td>
+                <td>
+                  {% if l.video_url %}
+                    <a href="{{ l.video_url }}" target="_blank">Mở video</a>
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+
+                <td class="d-flex gap-2">
+                  <a class="btn btn-sm btn-warning"
+                     href="{{ url_for('manager.manager_lessons_edit', lesson_id=l.id) }}">
+                    Sửa
+                  </a>
+
+                  <form method="POST"
+                        action="{{ url_for('manager.manager_lessons_delete', lesson_id=l.id) }}"
+                        onsubmit="return confirm('Xóa bài học này?');">
+                    {{ form_csrf_token()|safe }}
+                    <button class="btn btn-sm btn-danger" type="submit">Xóa</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center text-muted">Chưa có dữ liệu</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <a class="btn btn-secondary" href="{{ url_for('manager.manager_home') }}">Quay lại</a>
+  </div>
+</div>
+
+{% endblock %}

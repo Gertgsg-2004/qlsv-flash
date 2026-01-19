@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% set title="Phân quyền Users" %}
+{% block content %}
+<div class="card text-dark">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>Phân quyền Users</b>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('students_index') }}">Quay lại</a>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Mã SV</th>
+            <th>Tên</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th style="width:220px;">Cập nhật</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.ma_sv }}</td>
+            <td>{{ u.ten_sv }}</td>
+            <td>{{ u.email }}</td>
+            <td><span class="badge bg-info text-dark">{{ u.role }}</span></td>
+            <td>
+              <form method="POST" action="{{ url_for('admin.admin_update_role', user_id=u.id) }}" class="d-flex gap-2">
+                {{ form_csrf_token()|safe }}
+                <select class="form-select form-select-sm" name="role">
+                  <option value="student" {% if u.role=="student" %}selected{% endif %}>student</option>
+                  <option value="manager" {% if u.role=="manager" %}selected{% endif %}>manager</option>
+                  <option value="admin" {% if u.role=="admin" %}selected{% endif %}>admin</option>
+                </select>
+                <button class="btn btn-sm btn-success">Lưu</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+          {% if users|length == 0 %}
+          <tr><td colspan="6" class="text-center text-muted">Chưa có user</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

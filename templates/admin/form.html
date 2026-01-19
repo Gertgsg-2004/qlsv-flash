@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% set title = "Sinh viên" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header">
+    <b>{{ "Thêm sinh viên" if mode=="create" else "Sửa sinh viên" }}</b>
+  </div>
+
+  <div class="card-body">
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+      <div class="mb-3">
+        <label class="form-label">Mã SV</label>
+        <input class="form-control" name="ma_sv"
+               value="{{ student.ma_sv if student else '' }}" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Tên SV</label>
+        <input class="form-control" name="ten_sv"
+               value="{{ student.ten_sv if student else '' }}" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" type="email" name="email"
+               value="{{ student.email if student else '' }}" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">
+          Mật khẩu {% if mode=="edit" %}(để trống nếu không đổi){% endif %}
+        </label>
+        <input class="form-control" type="password" name="mat_khau"
+               {% if mode=="create" %}required{% endif %}>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Giới tính</label>
+        {% set gt = student.gioi_tinh if student else "" %}
+        <select class="form-select" name="gioi_tinh">
+          <option value="" {{ "selected" if not gt else "" }}>--</option>
+          <option value="Nam" {{ "selected" if gt=="Nam" else "" }}>Nam</option>
+          <option value="Nữ" {{ "selected" if gt=="Nữ" else "" }}>Nữ</option>
+          <option value="Khác" {{ "selected" if gt=="Khác" else "" }}>Khác</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Địa chỉ</label>
+        <input class="form-control" name="dia_chi"
+               value="{{ student.dia_chi if student else '' }}">
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">
+          {{ "Thêm" if mode=="create" else "Lưu" }}
+        </button>
+        <a class="btn btn-secondary" href="{{ url_for('admin.admin_students_index') }}">
+          Quay lại
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

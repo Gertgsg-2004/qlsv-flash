@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% set title = "Thêm bài học" if mode=="create" else "Sửa bài học" %}
+{% block content %}
+
+<div class="card text-dark">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>{{ "Thêm bài học" if mode=="create" else "Sửa bài học" }}</b>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('admin.admin_lessons') }}">Quay lại</a>
+  </div>
+
+  <div class="card-body">
+    <form method="POST">
+      {{ form_csrf_token()|safe }}
+
+      <div class="mb-3">
+        <label class="form-label">Môn học</label>
+        <select class="form-select" name="subject_id" required>
+          {% for sub in subjects %}
+            <option value="{{ sub.id }}"
+              {% if lesson and lesson.subject_id==sub.id %}selected{% endif %}>
+              {{ sub.code }} - {{ sub.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Tiêu đề bài học</label>
+        <input class="form-control" name="title" value="{{ lesson.title if lesson else '' }}" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Số thứ tự</label>
+        <input type="number" class="form-control" name="order_no" min="1" value="{{ lesson.order_no if lesson else 1 }}">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Video URL (tuỳ chọn)</label>
+        <input class="form-control" name="video_url" value="{{ lesson.video_url if lesson and lesson.video_url else '' }}">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Nội dung (tuỳ chọn)</label>
+        <textarea class="form-control" name="content" rows="6">{{ lesson.content if lesson and lesson.content else '' }}</textarea>
+      </div>
+
+      <button class="btn btn-primary">Lưu</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% set title = "Quản lý môn học" %}
+{% block content %}
+
+<div class="card text-dark">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>Quản lý môn học</b>
+    <a class="btn btn-success btn-sm" href="{{ url_for('admin.admin_subject_create') }}">+ Thêm môn học</a>
+  </div>
+
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="GET">
+      <div class="col-md-6">
+        <input class="form-control" name="q" placeholder="Tìm theo code / tên..." value="{{ q }}">
+      </div>
+      <div class="col-md-6 d-flex gap-2">
+        <button class="btn btn-primary">Tìm</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin.admin_subjects') }}">Reset</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Code</th>
+            <th>Tên môn</th>
+            <th>Tín chỉ</th>
+            <th>Mô tả</th>
+            <th style="width:160px;">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in subjects %}
+          <tr>
+            <td>{{ s.id }}</td>
+            <td><b>{{ s.code }}</b></td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.credits }}</td>
+            <td>{{ s.description or "" }}</td>
+            <td>
+              <a class="btn btn-sm btn-secondary"
+                 href="{{ url_for('admin.admin_subject_edit', subject_id=s.id) }}">Sửa</a>
+
+              <form method="POST"
+                    action="{{ url_for('admin.admin_subject_delete', subject_id=s.id) }}"
+                    style="display:inline;">
+                {{ form_csrf_token()|safe }}
+                <button class="btn btn-sm btn-danger"
+                        onclick="return confirm('Xoá môn học này?')">Xoá</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+
+          {% if subjects|length == 0 %}
+          <tr><td colspan="6" class="text-center text-muted">Chưa có môn học</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

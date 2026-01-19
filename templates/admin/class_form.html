@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% set title = "Thêm lớp" if mode=="create" else "Sửa lớp" %}
+{% block content %}
+
+<div class="card text-dark">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>{{ "Thêm lớp" if mode=="create" else "Sửa lớp" }}</b>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('admin.admin_classes') }}">Quay lại</a>
+  </div>
+
+  <div class="card-body">
+    <form method="POST">
+      {{ form_csrf_token()|safe }}
+
+      <div class="mb-3">
+        <label class="form-label">Code lớp</label>
+        <input class="form-control" name="code" required
+               value="{{ c.code if c else '' }}" placeholder="VD: C01">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Tên lớp</label>
+        <input class="form-control" name="name" required
+               value="{{ c.name if c else '' }}" placeholder="VD: Lớp Python K1">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Gán môn học cho lớp</label>
+        <div class="border rounded p-2" style="max-height:220px; overflow:auto;">
+          {% for s in subjects %}
+            {% set checked = false %}
+            {% if selected_ids is defined and s.id in selected_ids %}
+              {% set checked = true %}
+            {% endif %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="subject_ids" value="{{ s.id }}" id="sub{{ s.id }}"
+                     {% if checked %}checked{% endif %}>
+              <label class="form-check-label" for="sub{{ s.id }}">
+                <b>{{ s.code }}</b> - {{ s.name }}
+              </label>
+            </div>
+          {% endfor %}
+          {% if subjects|length == 0 %}
+            <div class="text-muted">Chưa có môn học. Hãy tạo môn học trước.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Mô tả</label>
+        <textarea class="form-control" name="description" rows="3"
+                  placeholder="(tuỳ chọn)">{{ c.description if c and c.description else "" }}</textarea>
+      </div>
+
+      <button class="btn btn-primary">Lưu</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

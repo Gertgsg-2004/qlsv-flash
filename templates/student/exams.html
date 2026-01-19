@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% set title="Kỳ thi" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>📝 Kỳ thi</b>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('student.student_home') }}">⬅ Về Home</a>
+  </div>
+
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="GET">
+      <div class="col-md-8">
+        <select class="form-select" name="subject_id">
+          <option value="">-- Tất cả môn học --</option>
+          {% for s in subjects %}
+            <option value="{{ s.id }}" {% if subject_id==s.id %}selected{% endif %}>
+              {{ s.code }} - {{ s.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4 d-flex gap-2">
+        <button class="btn btn-primary">Lọc</button>
+        <a class="btn btn-secondary" href="{{ url_for('student.student_exams') }}">Reset</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Môn</th>
+            <th>Tên kỳ thi</th>
+            <th style="width:160px;">Ngày thi</th>
+            <th>Mô tả</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in exams %}
+          <tr>
+            <td>{{ e.subject.code }} - {{ e.subject.name }}</td>
+            <td><b>{{ e.name }}</b></td>
+            <td>{{ e.exam_date or "" }}</td>
+            <td>{{ e.description or "" }}</td>
+          </tr>
+          {% endfor %}
+          {% if exams|length == 0 %}
+          <tr><td colspan="4" class="text-center text-muted">Chưa có kỳ thi</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

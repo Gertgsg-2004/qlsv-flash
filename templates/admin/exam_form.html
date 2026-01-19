@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% set title = "Thêm kỳ thi" if mode=="create" else "Sửa kỳ thi" %}
+{% block content %}
+
+<div class="card text-dark">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>{{ "Thêm kỳ thi" if mode=="create" else "Sửa kỳ thi" }}</b>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('admin.admin_exams') }}">Quay lại</a>
+  </div>
+
+  <div class="card-body">
+    <form method="POST">
+      {{ form_csrf_token()|safe }}
+
+      <div class="mb-3">
+        <label class="form-label">Tên kỳ thi</label>
+        <input class="form-control" name="name" required
+               value="{{ e.name if e else '' }}" placeholder="VD: Giữa kỳ">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Môn học</label>
+        <select class="form-select" name="subject_id" required>
+          <option value="">-- Chọn môn học --</option>
+          {% for s in subjects %}
+            <option value="{{ s.id }}"
+              {% if e and e.subject_id == s.id %}selected{% endif %}>
+              {{ s.code }} - {{ s.name }}
+            </option>
+          {% endfor %}
+        </select>
+        {% if subjects|length == 0 %}
+          <div class="text-muted mt-1">Chưa có môn học. Hãy tạo môn học trước.</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Ngày thi (tuỳ chọn)</label>
+        <input class="form-control" type="date" name="exam_date"
+               value="{% if e and e.exam_date %}{{ e.exam_date }}{% endif %}">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Mô tả</label>
+        <textarea class="form-control" name="description" rows="3"
+                  placeholder="(tuỳ chọn)">{{ e.description if e and e.description else "" }}</textarea>
+      </div>
+
+      <button class="btn btn-primary">Lưu</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

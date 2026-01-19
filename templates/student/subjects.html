@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% set title="Môn học" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>📘 Danh sách môn học</b>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('student.student_home') }}">⬅ Về Home</a>
+  </div>
+
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="GET">
+      <div class="col-md-8">
+        <input class="form-control" name="q" placeholder="Tìm theo mã/tên môn..." value="{{ q }}">
+      </div>
+      <div class="col-md-4 d-flex gap-2">
+        <button class="btn btn-primary">Tìm</button>
+        <a class="btn btn-secondary" href="{{ url_for('student.student_subjects') }}">Reset</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th style="width:140px;">Mã</th>
+            <th>Tên môn</th>
+            <th style="width:100px;">Tín chỉ</th>
+            <th>Mô tả</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in subjects %}
+          <tr>
+            <td><b>{{ s.code }}</b></td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.credits }}</td>
+            <td>{{ s.description or "" }}</td>
+          </tr>
+          {% endfor %}
+          {% if subjects|length == 0 %}
+          <tr><td colspan="4" class="text-center text-muted">Không có dữ liệu</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

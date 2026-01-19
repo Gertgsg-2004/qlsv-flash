@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% set title="Lớp học" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>🏫 Lớp học</b>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('student.student_home') }}">⬅ Về Home</a>
+  </div>
+
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="GET">
+      <div class="col-md-8">
+        <input class="form-control" name="q" placeholder="Tìm theo mã/tên lớp..." value="{{ q }}">
+      </div>
+      <div class="col-md-4 d-flex gap-2">
+        <button class="btn btn-primary">Tìm</button>
+        <a class="btn btn-secondary" href="{{ url_for('student.student_classes') }}">Reset</a>
+      </div>
+    </form>
+
+    <div class="accordion" id="accClasses">
+      {% for c in classes %}
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="h{{ c.id }}">
+          <button class="accordion-button collapsed" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#b{{ c.id }}">
+            <b>{{ c.code }}</b> - {{ c.name }}
+          </button>
+        </h2>
+        <div id="b{{ c.id }}" class="accordion-collapse collapse" data-bs-parent="#accClasses">
+          <div class="accordion-body">
+            <div class="mb-2">{{ c.description or "" }}</div>
+            <div><b>Môn trong lớp:</b></div>
+            <ul class="mb-0">
+              {% for s in c.subjects %}
+                <li>{{ s.code }} - {{ s.name }}</li>
+              {% endfor %}
+              {% if c.subjects|length == 0 %}
+                <li class="text-muted">Chưa gán môn học</li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+      {% if classes|length == 0 %}
+        <div class="text-muted">Không có lớp.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

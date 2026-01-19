@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% set title="Quản lý bài học" %}
+{% block content %}
+
+<div class="card text-dark">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>Quản lý bài học</b>
+    <a class="btn btn-success btn-sm" href="{{ url_for('admin.admin_lessons_create') }}">+ Thêm bài học</a>
+  </div>
+
+  <div class="card-body">
+
+    <form class="row g-2 mb-3" method="GET">
+      <div class="col-md-6">
+        <select class="form-select" name="subject_id">
+          <option value="">-- Tất cả môn học --</option>
+          {% for sub in subjects %}
+            <option value="{{ sub.id }}" {% if subject_id==sub.id %}selected{% endif %}>
+              {{ sub.code }} - {{ sub.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary">Lọc</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin.admin_lessons') }}">Reset</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Môn học</th>
+            <th>Thứ tự</th>
+            <th>Tiêu đề</th>
+            <th>Video</th>
+            <th style="width:160px">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for l in lessons %}
+          <tr>
+            <td>{{ l.id }}</td>
+            <td>{{ l.subject.code }} - {{ l.subject.name }}</td>
+            <td>{{ l.order_no }}</td>
+            <td>{{ l.title }}</td>
+            <td>
+              {% if l.video_url %}
+                <a href="{{ l.video_url }}" target="_blank">Mở</a>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              <a class="btn btn-sm btn-secondary" href="{{ url_for('admin.admin_lessons_edit', lesson_id=l.id) }}">Sửa</a>
+
+              <form method="POST" action="{{ url_for('admin.admin_lessons_delete', lesson_id=l.id) }}" style="display:inline;">
+                {{ form_csrf_token()|safe }}
+                <button class="btn btn-sm btn-danger"
+                        onclick="return confirm('Xóa bài học này?')">Xóa</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+
+          {% if lessons|length == 0 %}
+          <tr><td colspan="6" class="text-center text-muted">Chưa có bài học</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

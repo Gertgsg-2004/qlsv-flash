@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% set title="Admin Dashboard" %}
+{% block content %}
+<div class="card text-dark">
+  <div class="card-header"><b>Admin Dashboard</b></div>
+  <div class="card-body">
+    <a class="btn btn-primary" href="{{ url_for('admin.admin_users') }}">Quản lý Users & Phân quyền</a>
+  </div>
+</div>
+{% endblock %}

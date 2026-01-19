@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% set title="Lớp học (Giáo viên)" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header"><b>Lớp bạn phụ trách</b></div>
+  <div class="card-body">
+
+    <table class="table table-bordered align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Code</th>
+          <th>Tên lớp</th>
+          <th>Mô tả</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in classes %}
+        <tr>
+          <td>{{ c.id }}</td>
+          <td>{{ c.code }}</td>
+          <td>{{ c.name }}</td>
+          <td>{{ c.description or "" }}</td>
+        </tr>
+        {% endfor %}
+        {% if classes|length == 0 %}
+        <tr><td colspan="4" class="text-center text-muted">Bạn chưa được gán lớp (nhờ Admin gán).</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    <a class="btn btn-secondary" href="{{ url_for('manager.manager_home') }}">Quay lại</a>
+  </div>
+</div>
+
+{% endblock %}

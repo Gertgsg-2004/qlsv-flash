@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% set title="Bảng điểm của tôi" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>📊 Bảng điểm của tôi</b>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('student.student_home') }}">⬅ Về Home</a>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Môn</th>
+            <th>Kỳ thi</th>
+            <th>Ngày thi</th>
+            <th style="width:120px;">Điểm</th>
+            <th>Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for g in rows %}
+          <tr>
+            <td>{{ g.subject.code }} - {{ g.subject.name }}</td>
+            <td>{{ g.exam.name }}</td>
+            <td>{{ g.exam.exam_date or "" }}</td>
+            <td><b>{{ g.score }}</b></td>
+            <td>{{ g.note or "" }}</td>
+          </tr>
+          {% endfor %}
+          {% if rows|length == 0 %}
+          <tr><td colspan="5" class="text-center text-muted">Chưa có điểm</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

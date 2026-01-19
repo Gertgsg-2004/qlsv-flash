@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% set title="Báo cáo sinh viên" %}
+{% block content %}
+<div class="card text-dark">
+  <div class="card-header"><b>Báo cáo thống kê</b></div>
+  <div class="card-body">
+    <p><b>Tổng số sinh viên:</b> {{ total }}</p>
+    <p><b>Nam:</b> {{ nam }} | <b>Nữ:</b> {{ nu }} | <b>Khác:</b> {{ khac }}</p>
+
+    <canvas id="pieChart"
+            style="max-width: 420px;"
+            data-nam="{{ nam }}"
+            data-nu="{{ nu }}"
+            data-khac="{{ khac }}"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const canvas = document.getElementById('pieChart');
+
+  const pieData = [
+    Number(canvas.dataset.nam || 0),
+    Number(canvas.dataset.nu || 0),
+    Number(canvas.dataset.khac || 0),
+  ];
+
+  new Chart(canvas, {
+    type: 'pie',
+    data: {
+      labels: ['Nam', 'Nữ', 'Khác'],
+      datasets: [{ data: pieData }]
+    }
+  });
+</script>
+{% endblock %}

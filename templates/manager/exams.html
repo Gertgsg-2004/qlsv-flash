@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% set title = "Kỳ thi (Giáo viên)" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <b>Quản lý kỳ thi</b>
+    <a class="btn btn-success btn-sm" href="{{ url_for('manager.manager_exam_create') }}">
+      + Thêm kỳ thi
+    </a>
+  </div>
+
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="get" action="{{ url_for('manager.manager_exams') }}">
+      <div class="col-md-6">
+        <input class="form-control" name="q" value="{{ q or '' }}"
+               placeholder="Tìm theo tên kỳ thi / tên môn / mã môn...">
+      </div>
+      <div class="col-md-6 d-flex gap-2">
+        <button class="btn btn-primary">Lọc</button>
+        <a class="btn btn-secondary" href="{{ url_for('manager.manager_exams') }}">Reset</a>
+        <a class="btn btn-outline-dark ms-auto" href="{{ url_for('manager.manager_home') }}">← Về Home</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th style="width:70px">ID</th>
+            <th>Tên kỳ thi</th>
+            <th>Môn</th>
+            <th style="width:140px">Ngày thi</th>
+            <th>Mô tả</th>
+            <th style="width:160px">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if exams and exams|length > 0 %}
+            {% for e in exams %}
+              <tr>
+                <td>{{ e.id }}</td>
+                <td><b>{{ e.name }}</b></td>
+                <td>
+                  {% if e.subject %}
+                    {{ e.subject.code }} - {{ e.subject.name }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>{{ e.exam_date or "" }}</td>
+                <td>{{ e.description or "" }}</td>
+                <td>
+                  <a class="btn btn-secondary btn-sm"
+                     href="{{ url_for('manager.manager_exam_edit', exam_id=e.id) }}">
+                    Sửa
+                  </a>
+
+                  <form method="post"
+                        action="{{ url_for('manager.manager_exam_delete', exam_id=e.id) }}"
+                        style="display:inline"
+                        onsubmit="return confirm('Xoá kỳ thi này?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-danger btn-sm">Xoá</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center text-muted">
+                Chưa có dữ liệu.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
