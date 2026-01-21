@@ -2,26 +2,57 @@
 {% set title="Quản lý sinh viên" %}
 {% block content %}
 
-<div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <b>Danh sách sinh viên</b>
-    <a class="btn btn-success btn-sm"
-       href="{{ url_for('admin.admin_students_create') }}">
-      + Thêm sinh viên
-    </a>
+<style>
+  /* Avatar upload UI đẹp hơn */
+  .avatar-cell img, .avatar-cell .avatar-placeholder{
+    width:44px;height:44px;border-radius:50%;object-fit:cover;flex:0 0 auto;
+  }
+  .avatar-cell .avatar-placeholder{
+    background:#d0d0d0;
+  }
+  .file-wrap{
+    display:flex; gap:.4rem; align-items:center; flex-wrap:wrap;
+  }
+  .file-wrap input[type="file"]{
+    max-width:170px;
+  }
+  .table td, .table th{ vertical-align: middle; }
+</style>
+
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-dark">ADMIN</span>
+      <b>Danh sách sinh viên</b>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-success btn-sm" href="{{ url_for('admin.admin_students_create') }}">
+        + Thêm sinh viên
+      </a>
+
+      <!-- ✅ Export / Import / Report -->
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_students_export') }}">
+        Export Excel
+      </a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_students_import') }}">
+        Import Excel
+      </a>
+      <a class="btn btn-outline-info btn-sm" href="{{ url_for('admin.admin_students_report') }}">
+        Báo cáo thống kê
+      </a>
+    </div>
   </div>
 
   <div class="card-body">
 
     <!-- Search -->
-    <form class="row g-2 mb-3" method="GET">
+    <form class="row g-2 mb-3" method="GET" action="{{ url_for('admin.admin_students_index') }}">
       <div class="col-md-3">
-        <input class="form-control" name="ma_sv"
-               placeholder="Mã SV" value="{{ ma_sv }}">
+        <input class="form-control" name="ma_sv" placeholder="Mã SV" value="{{ ma_sv }}">
       </div>
       <div class="col-md-4">
-        <input class="form-control" name="ten_sv"
-               placeholder="Tên SV" value="{{ ten_sv }}">
+        <input class="form-control" name="ten_sv" placeholder="Tên SV" value="{{ ten_sv }}">
       </div>
       <div class="col-md-2">
         <select class="form-select" name="per_page">
@@ -32,25 +63,22 @@
       </div>
       <div class="col-md-3 d-flex gap-2">
         <button class="btn btn-primary">Lọc</button>
-        <a class="btn btn-secondary"
-           href="{{ url_for('admin.admin_students_index') }}">
-          Reset
-        </a>
+        <a class="btn btn-secondary" href="{{ url_for('admin.admin_students_index') }}">Reset</a>
       </div>
     </form>
 
     <div class="table-responsive">
-      <table class="table table-bordered align-middle">
+      <table class="table table-bordered table-hover align-middle">
         <thead class="table-dark">
           <tr>
-            <th>ID</th>
-            <th>Avatar</th>
+            <th style="width:70px;">ID</th>
+            <th style="width:360px;">Avatar</th>
             <th>Mã SV</th>
             <th>Tên</th>
             <th>Email</th>
-            <th>Giới tính</th>
+            <th style="width:110px;">Giới tính</th>
             <th>Địa chỉ</th>
-            <th width="160">Hành động</th>
+            <th style="width:170px;">Hành động</th>
           </tr>
         </thead>
 
@@ -59,36 +87,43 @@
           <tr>
             <td>{{ s.id }}</td>
 
-            <td>
-              <div class="d-flex align-items-center gap-2">
+            <td class="avatar-cell">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
                 {% if s.avatar %}
-                  <img src="{{ url_for('static', filename='uploads/' ~ s.avatar) }}"
-                       width="40" height="40"
-                       style="border-radius:50%;object-fit:cover;">
+                  <img src="{{ url_for('static', filename='uploads/' ~ s.avatar) }}" alt="avatar">
                 {% else %}
-                  <div style="width:40px;height:40px;border-radius:50%;background:#ccc"></div>
+                  <div class="avatar-placeholder"></div>
                 {% endif %}
 
-                <form method="POST"
-                      action="{{ url_for('admin.admin_student_upload_avatar', student_id=s.id) }}"
-                      enctype="multipart/form-data"
-                      class="d-flex gap-1">
+                <form
+                  method="POST"
+                  action="{{ url_for('admin.admin_student_upload_avatar', student_id=s.id) }}"
+                  enctype="multipart/form-data"
+                  class="file-wrap"
+                >
+                  <!-- ✅ CSRF đúng chuẩn -->
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <input type="file" name="avatar"
-                         class="form-control form-control-sm"
-                         accept=".png,.jpg,.jpeg,.webp" required>
-                  <button class="btn btn-sm btn-warning">Up</button>
+
+                  <input
+                    type="file"
+                    name="avatar"
+                    class="form-control form-control-sm"
+                    accept=".png,.jpg,.jpeg,.webp"
+                    required
+                  >
+                  <button class="btn btn-sm btn-warning" type="submit">Up</button>
+                  <small class="text-muted">PNG/JPG/WEBP</small>
                 </form>
               </div>
             </td>
 
-            <td>{{ s.ma_sv }}</td>
-            <td>{{ s.ten_sv }}</td>
+            <td><span class="badge bg-light text-dark">{{ s.ma_sv }}</span></td>
+            <td><b>{{ s.ten_sv }}</b></td>
             <td>{{ s.email }}</td>
             <td>{{ s.gioi_tinh or "" }}</td>
             <td>{{ s.dia_chi or "" }}</td>
 
-            <td>
+            <td class="d-flex gap-2">
               <a class="btn btn-sm btn-secondary"
                  href="{{ url_for('admin.admin_students_edit', student_id=s.id) }}">
                 Sửa
@@ -99,7 +134,7 @@
                     style="display:inline">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn btn-sm btn-danger"
-                        onclick="return confirm('Xóa sinh viên?')">
+                        onclick="return confirm('Xóa sinh viên này?')">
                   Xóa
                 </button>
               </form>
@@ -118,35 +153,45 @@
       </table>
     </div>
 
-    <!-- Pagination -->
-    <ul class="pagination">
-      {% if pagination.has_prev %}
-      <li class="page-item">
-        <a class="page-link"
-           href="{{ url_for('admin.admin_students_index', page=pagination.prev_num) }}">
-          Prev
-        </a>
-      </li>
-      {% endif %}
+    <!-- ✅ Pagination (giữ filter/query) -->
+    <nav>
+      <ul class="pagination">
 
-      {% for p in pagination.iter_pages() %}
-        {% if p %}
-        <li class="page-item {% if p==pagination.page %}active{% endif %}">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
           <a class="page-link"
-             href="{{ url_for('admin.admin_students_index', page=p) }}">{{ p }}</a>
+             href="{{ url_for('admin.admin_students_index',
+                              page=pagination.prev_num,
+                              ma_sv=ma_sv, ten_sv=ten_sv, per_page=per_page) }}">
+            Prev
+          </a>
         </li>
-        {% endif %}
-      {% endfor %}
 
-      {% if pagination.has_next %}
-      <li class="page-item">
-        <a class="page-link"
-           href="{{ url_for('admin.admin_students_index', page=pagination.next_num) }}">
-          Next
-        </a>
-      </li>
-      {% endif %}
-    </ul>
+        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+          {% if p %}
+            <li class="page-item {% if p==pagination.page %}active{% endif %}">
+              <a class="page-link"
+                 href="{{ url_for('admin.admin_students_index',
+                                  page=p,
+                                  ma_sv=ma_sv, ten_sv=ten_sv, per_page=per_page) }}">
+                {{ p }}
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+          <a class="page-link"
+             href="{{ url_for('admin.admin_students_index',
+                              page=pagination.next_num,
+                              ma_sv=ma_sv, ten_sv=ten_sv, per_page=per_page) }}">
+            Next
+          </a>
+        </li>
+
+      </ul>
+    </nav>
 
   </div>
 </div>

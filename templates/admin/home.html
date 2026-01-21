@@ -1,10 +1,216 @@
 {% extends "base.html" %}
 {% set title="Admin Dashboard" %}
 {% block content %}
-<div class="card text-dark">
-  <div class="card-header"><b>Admin Dashboard</b></div>
-  <div class="card-body">
-    <a class="btn btn-primary" href="{{ url_for('admin.admin_users') }}">Quản lý Users & Phân quyền</a>
+
+<style>
+  .dash-hero{
+    background: linear-gradient(135deg, rgba(13,110,253,.12), rgba(25,135,84,.10));
+    border: 1px solid rgba(0,0,0,.06);
+  }
+  .stat-card{
+    border: 1px solid rgba(0,0,0,.08);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .stat-card:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 .6rem 1.2rem rgba(0,0,0,.08);
+  }
+  .icon-badge{
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+  .quick-link{
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 14px;
+    padding: 14px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .quick-link:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 .6rem 1.2rem rgba(0,0,0,.08);
+  }
+  .quick-link .q-ico{
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .muted{ color: rgba(0,0,0,.6); }
+</style>
+
+<div class="container-fluid">
+
+  <!-- HERO -->
+  <div class="card dash-hero mb-4">
+    <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge text-bg-primary">Admin</span>
+          <span class="badge text-bg-dark">Dashboard</span>
+        </div>
+        <h3 class="mt-2 mb-1">Chào {{ current_user.ten_sv or current_user.email }} 👋</h3>
+        <div class="muted">Quản lý hệ thống QLSV: users, môn học, lớp, kỳ thi, điểm số, bài học…</div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" href="{{ url_for('admin.admin_users') }}">👤 Users & Phân quyền</a>
+        <a class="btn btn-primary" href="{{ url_for('admin.admin_students_index') }}">👨‍🎓 Sinh viên</a>
+      </div>
+    </div>
   </div>
+
+  <!-- STATS (hiện số liệu nếu bạn truyền từ route; nếu chưa có sẽ hiện "--") -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card stat-card">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <div class="muted">Tổng Users</div>
+            <div class="fs-3 fw-bold">{{ total_users if total_users is defined else "--" }}</div>
+          </div>
+          <div class="icon-badge bg-primary-subtle text-primary">👤</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card stat-card">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <div class="muted">Sinh viên</div>
+            <div class="fs-3 fw-bold">{{ total_students if total_students is defined else "--" }}</div>
+          </div>
+          <div class="icon-badge bg-success-subtle text-success">👨‍🎓</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card stat-card">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <div class="muted">Môn học</div>
+            <div class="fs-3 fw-bold">{{ total_subjects if total_subjects is defined else "--" }}</div>
+          </div>
+          <div class="icon-badge bg-warning-subtle text-warning">📘</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card stat-card">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <div class="muted">Bảng điểm</div>
+            <div class="fs-3 fw-bold">{{ total_grades if total_grades is defined else "--" }}</div>
+          </div>
+          <div class="icon-badge bg-danger-subtle text-danger">📊</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS + SHORTCUTS -->
+  <div class="row g-3">
+    <div class="col-12 col-xl-7">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <b>⚡ Tác vụ nhanh</b>
+          <span class="muted">Đi tới các màn quản trị hay dùng</span>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <a class="quick-link" href="{{ url_for('admin.admin_users') }}">
+                <div class="q-ico bg-primary-subtle text-primary">👤</div>
+                <div>
+                  <div class="fw-bold">Users & Phân quyền</div>
+                  <div class="muted small">Tạo user, đổi role admin/manager/student</div>
+                </div>
+              </a>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <a class="quick-link" href="{{ url_for('admin.admin_students_index') }}">
+                <div class="q-ico bg-success-subtle text-success">👨‍🎓</div>
+                <div>
+                  <div class="fw-bold">Quản lý sinh viên</div>
+                  <div class="muted small">CRUD + Import/Export + Avatar</div>
+                </div>
+              </a>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <a class="quick-link" href="{{ url_for('admin.admin_subjects') }}">
+                <div class="q-ico bg-warning-subtle text-warning">📘</div>
+                <div>
+                  <div class="fw-bold">Môn học</div>
+                  <div class="muted small">Tạo/sửa môn học, tín chỉ</div>
+                </div>
+              </a>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <a class="quick-link" href="{{ url_for('admin.admin_classes') }}">
+                <div class="q-ico bg-info-subtle text-info">🏫</div>
+                <div>
+                  <div class="fw-bold">Lớp học</div>
+                  <div class="muted small">Tạo lớp, gán môn cho lớp</div>
+                </div>
+              </a>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <a class="quick-link" href="{{ url_for('admin.admin_exams') }}">
+                <div class="q-ico bg-secondary-subtle text-secondary">📝</div>
+                <div>
+                  <div class="fw-bold">Kỳ thi</div>
+                  <div class="muted small">Tạo kỳ thi theo môn</div>
+                </div>
+              </a>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <a class="quick-link" href="{{ url_for('admin.admin_grades') }}">
+                <div class="q-ico bg-danger-subtle text-danger">📊</div>
+                <div>
+                  <div class="fw-bold">Bảng điểm</div>
+                  <div class="muted small">Nhập/sửa điểm, lọc theo SV/môn/kỳ thi</div>
+                </div>
+              </a>
+            </div>
+
+            <div class="col-12">
+              <a class="quick-link" href="{{ url_for('admin.admin_lessons') }}">
+                <div class="q-ico bg-dark-subtle text-dark">📚</div>
+                <div>
+                  <div class="fw-bold">Quản lý bài học</div>
+                  <div class="muted small">Thêm nội dung, link video, sắp xếp thứ tự</div>
+                </div>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
+
 {% endblock %}

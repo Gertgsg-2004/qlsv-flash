@@ -1,49 +1,142 @@
 {% extends "base.html" %}
-{% set title="Gán lớp cho giáo viên" %}
+{% set title="Quản lý giáo viên & Gán lớp" %}
 {% block content %}
 
 <div class="card">
-  <div class="card-header"><b>Gán lớp cho giáo viên</b></div>
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <b>Quản lý giáo viên & Gán lớp</b>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <!-- Thêm giáo viên: dùng form tạo student/user rồi set role=manager (bạn có thể chỉnh lại route nếu muốn) -->
+      <a class="btn btn-success btn-sm" href="{{ url_for('admin.admin_students_create') }}">
+        + Thêm giáo viên
+      </a>
+
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_home') }}">
+        ⬅ Về Dashboard
+      </a>
+
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_users') }}">
+        👤 Users & Phân quyền
+      </a>
+    </div>
+  </div>
+
   <div class="card-body">
 
     {% if teachers|length == 0 %}
-      <div class="text-muted">Chưa có tài khoản role=manager (giáo viên).</div>
-    {% endif %}
+      <div class="alert alert-warning mb-0">
+        Chưa có giáo viên (role = manager). Hãy tạo user và set role = manager trước.
+      </div>
+    {% else %}
 
-    {% for t in teachers %}
-      <form class="border rounded p-3 mb-3"
-            method="POST"
-            action="{{ url_for('admin.admin_teacher_update_classes', teacher_id=t.id) }}">
-        {{ form_csrf_token()|safe }}
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th style="width:70px;">ID</th>
+            <th style="width:260px;">Giáo viên</th>
+            <th style="width:220px;">Tên</th>
+            <th>Email</th>
+            <th style="width:120px;">Giới tính</th>
+            <th style="width:220px;">Địa chỉ</th>
+            <th style="width:420px;">Gắn lớp</th>
+            <th style="width:210px;">Hành động</th>
+          </tr>
+        </thead>
 
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <b>{{ t.ten_sv }}</b> <span class="text-muted">({{ t.email }})</span>
-            <div class="text-muted">ID: {{ t.id }}</div>
-          </div>
+        <tbody>
+          {% for t in teachers %}
+          <tr>
+            <td>{{ t.id }}</td>
 
-          <button class="btn btn-primary btn-sm">Lưu</button>
-        </div>
+            <!-- Avatar + Role -->
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                {% if t.avatar %}
+                  <img src="{{ url_for('static', filename='uploads/' ~ t.avatar) }}"
+                       width="44" height="44"
+                       style="border-radius:50%;object-fit:cover;"
+                       alt="avatar">
+                {% else %}
+                  <div style="width:44px;height:44px;border-radius:50%;background:#ccc;"></div>
+                {% endif %}
 
-        <hr class="my-2">
+                <div>
+                  <div class="fw-bold">{{ (t.ten_sv or "Giáo viên") }}</div>
+                  <small class="text-muted">Role: {{ t.role }}</small>
+                </div>
+              </div>
+            </td>
 
-        <div class="row">
-          {% for c in classes %}
-            <div class="col-md-4">
-              <label class="form-check-label d-flex gap-2 align-items-center">
-                <input class="form-check-input"
-                       type="checkbox"
-                       name="class_ids"
-                       value="{{ c.id }}"
-                       {% if c in t.teaching_classes %}checked{% endif %}>
-                <span>{{ c.code }} - {{ c.name }}</span>
-              </label>
-            </div>
+            <td>{{ t.ten_sv or "" }}</td>
+            <td>{{ t.email }}</td>
+            <td>{{ t.gioi_tinh or "" }}</td>
+            <td>{{ t.dia_chi or "" }}</td>
+
+            <!-- ✅ Gắn lớp + CSRF + checked -->
+            <td>
+              <form method="POST"
+                    action="{{ url_for('admin.admin_teacher_update_classes', teacher_id=t.id) }}"
+                    class="d-flex flex-wrap gap-2 align-items-center">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                {% set selected_ids = (t.teaching_classes | map(attribute='id') | list) if t.teaching_classes else [] %}
+
+                {% for c in classes %}
+                  <div class="form-check me-2">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="class_ids"
+                           value="{{ c.id }}"
+                           id="t{{ t.id }}_c{{ c.id }}"
+                           {% if c.id in selected_ids %}checked{% endif %}>
+                    <label class="form-check-label" for="t{{ t.id }}_c{{ c.id }}">
+                      {{ c.code }} - {{ c.name }}
+                    </label>
+                  </div>
+                {% endfor %}
+              </form>
+
+              <small class="text-muted d-block mt-1">
+                Tick lớp → bấm <b>Lưu lớp</b> để cập nhật.
+              </small>
+            </td>
+
+            <!-- ✅ Hành động: Lưu lớp / Sửa / Xóa -->
+            <td class="text-nowrap">
+
+              <!-- Lưu lớp: submit form ở cột Gắn lớp -->
+              <button class="btn btn-sm btn-primary mb-1"
+                      onclick="this.closest('tr').querySelector('form').submit();">
+                Lưu lớp
+              </button>
+
+              <!-- Sửa giáo viên: dùng route edit student/user (bạn đổi endpoint nếu khác) -->
+              <a class="btn btn-sm btn-secondary mb-1"
+                 href="{{ url_for('admin.admin_students_edit', student_id=t.id) }}">
+                Sửa
+              </a>
+
+              <!-- Xóa giáo viên: dùng route delete student/user (bạn đổi endpoint nếu khác) -->
+              <form method="POST"
+                    action="{{ url_for('admin.admin_students_delete', student_id=t.id) }}"
+                    style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-danger mb-1"
+                        onclick="return confirm('Xóa giáo viên này?')">
+                  Xóa
+                </button>
+              </form>
+
+            </td>
+          </tr>
           {% endfor %}
-        </div>
-      </form>
-    {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
+    {% endif %}
   </div>
 </div>
 

@@ -3,15 +3,19 @@
 {% block content %}
 
 <div class="card text-dark">
-  <div class="card-header d-flex justify-content-between align-items-center">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <b>Quản lý bảng điểm</b>
-    <a class="btn btn-success btn-sm" href="{{ url_for('admin.admin_grade_create') }}">+ Thêm điểm</a>
+    <a class="btn btn-success btn-sm" href="{{ url_for('admin.admin_grade_create') }}">
+      + Thêm điểm
+    </a>
   </div>
 
   <div class="card-body">
-    <form class="row g-2 mb-3" method="GET">
+    <!-- Filter -->
+    <form class="row g-2 mb-3" method="GET" action="{{ url_for('admin.admin_grades') }}">
       <div class="col-md-4">
-        <input class="form-control" name="student_q" placeholder="Tìm theo mã SV / tên / email"
+        <input class="form-control" name="student_q"
+               placeholder="Tìm theo mã SV / tên / email"
                value="{{ student_q }}">
       </div>
 
@@ -43,47 +47,74 @@
       </div>
     </form>
 
+    <!-- Table -->
     <div class="table-responsive">
       <table class="table table-bordered align-middle">
         <thead class="table-dark">
           <tr>
-            <th>ID</th>
+            <th style="width:70px;">ID</th>
             <th>Sinh viên</th>
             <th>Môn</th>
             <th>Kỳ thi</th>
-            <th>Điểm</th>
+            <th style="width:90px;">Điểm</th>
             <th>Ghi chú</th>
             <th style="width:160px;">Hành động</th>
           </tr>
         </thead>
+
         <tbody>
           {% for g in grades %}
           <tr>
             <td>{{ g.id }}</td>
+
             <td>
               <b>{{ g.student.ma_sv }}</b> - {{ g.student.ten_sv }}
               <div class="text-muted" style="font-size:12px;">{{ g.student.email }}</div>
             </td>
-            <td>{{ g.subject.code if g.subject.code else g.subject.id }} - {{ g.subject.name if g.subject.name else "" }}</td>
-            <td>{{ g.exam.name if g.exam.name else ("Kỳ thi #" ~ g.exam.id) }}</td>
-            <td><span class="badge bg-success">{{ g.score }}</span></td>
-            <td>{{ g.note or "" }}</td>
+
             <td>
-              <a class="btn btn-sm btn-secondary" href="{{ url_for('admin.admin_grade_edit', grade_id=g.id) }}">Sửa</a>
-              <form method="POST" action="{{ url_for('admin.admin_grade_delete', grade_id=g.id) }}" style="display:inline;">
-                {{ form_csrf_token()|safe }}
-                <button class="btn btn-sm btn-danger" onclick="return confirm('Xoá điểm này?')">Xoá</button>
+              {{ g.subject.code if g.subject.code else g.subject.id }}
+              - {{ g.subject.name if g.subject.name else "" }}
+            </td>
+
+            <td>
+              {{ g.exam.name if g.exam.name else ("Kỳ thi #" ~ g.exam.id) }}
+            </td>
+
+            <td>
+              <span class="badge bg-success">{{ g.score }}</span>
+            </td>
+
+            <td>{{ g.note or "" }}</td>
+
+            <td>
+              <a class="btn btn-sm btn-secondary"
+                 href="{{ url_for('admin.admin_grade_edit', grade_id=g.id) }}">
+                Sửa
+              </a>
+
+              <form method="POST"
+                    action="{{ url_for('admin.admin_grade_delete', grade_id=g.id) }}"
+                    style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-danger"
+                        onclick="return confirm('Xoá điểm này?')">
+                  Xoá
+                </button>
               </form>
             </td>
           </tr>
           {% endfor %}
 
           {% if grades|length == 0 %}
-          <tr><td colspan="7" class="text-center text-muted">Chưa có điểm</td></tr>
+          <tr>
+            <td colspan="7" class="text-center text-muted">Chưa có điểm</td>
+          </tr>
           {% endif %}
         </tbody>
       </table>
     </div>
+
   </div>
 </div>
 

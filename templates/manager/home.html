@@ -2,92 +2,205 @@
 {% set title="Home giáo viên" %}
 {% block content %}
 
-<div class="row g-3">
-  <!-- Thông tin cá nhân -->
-  <div class="col-lg-4">
-    <div class="card">
-      <div class="card-header">
-        <b>Thông tin cá nhân</b>
+<style>
+  .hero{
+    background: linear-gradient(135deg, rgba(13,110,253,.12), rgba(255,193,7,.10));
+    border: 1px solid rgba(0,0,0,.06);
+  }
+  .card-hover{
+    border: 1px solid rgba(0,0,0,.08);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .card-hover:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 .6rem 1.2rem rgba(0,0,0,.08);
+  }
+  .avatar{
+    width: 92px; height: 92px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgba(255,255,255,.8);
+    box-shadow: 0 .4rem 1rem rgba(0,0,0,.10);
+  }
+  .icon-badge{
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 20px;
+  }
+  .quick-link{
+    text-decoration:none;
+    color: inherit;
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 16px;
+    padding: 14px;
+    display:flex;
+    gap: 12px;
+    align-items:center;
+    transition: transform .15s ease, box-shadow .15s ease;
+    background: #fff;
+  }
+  .quick-link:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 .6rem 1.2rem rgba(0,0,0,.08);
+  }
+  .muted{ color: rgba(0,0,0,.6); }
+</style>
+
+<div class="container-fluid">
+
+  <!-- HERO -->
+  <div class="card hero mb-4">
+    <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <div class="d-flex gap-2 align-items-center">
+          <span class="badge text-bg-warning">Manager</span>
+          <span class="badge text-bg-dark">Giáo viên</span>
+        </div>
+        <h3 class="mt-2 mb-1">Chào {{ current_user.ten_sv or current_user.email }} 👋</h3>
+        <div class="muted">Điều hướng nhanh các chức năng: môn học, lớp học, bài học, kỳ thi, bảng điểm.</div>
       </div>
 
-      <div class="card-body text-center">
-        {% if current_user.avatar %}
-          <img
-            src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
-            width="110" height="110"
-            style="border-radius:50%;object-fit:cover;"
-            alt="avatar">
-        {% else %}
-          <div style="width:110px;height:110px;border-radius:50%;background:#ddd;margin:0 auto;"></div>
-        {% endif %}
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-dark" href="{{ url_for('account.profile') }}">👤 Hồ sơ</a>
+        <a class="btn btn-warning" href="{{ url_for('logout') }}">Đăng xuất</a>
+      </div>
+    </div>
+  </div>
 
-        <h5 class="mt-3 mb-0">{{ current_user.ten_sv }}</h5>
-        <div class="text-muted">{{ current_user.ma_sv }}</div>
+  <div class="row g-3">
+    <!-- LEFT: PROFILE -->
+    <div class="col-12 col-xl-4">
+      <div class="card card-hover">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <b>Thông tin cá nhân</b>
+          <span class="badge text-bg-secondary">{{ current_user.role }}</span>
+        </div>
 
-        <hr>
+        <div class="card-body">
+          <div class="text-center mb-3">
+            {% if current_user.avatar %}
+              <img class="avatar" src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}" alt="avatar">
+            {% else %}
+              <img class="avatar" src="https://via.placeholder.com/92x92.png?text=AVT" alt="avatar">
+            {% endif %}
+            <div class="mt-3 fw-bold fs-5">{{ current_user.ten_sv or "—" }}</div>
+            <div class="muted">{{ current_user.ma_sv or current_user.id }}</div>
+          </div>
 
-        <div class="text-start">
+          <hr>
+
           <div class="mb-2"><b>Email:</b> {{ current_user.email }}</div>
           <div class="mb-2"><b>Giới tính:</b> {{ current_user.gioi_tinh or "—" }}</div>
           <div class="mb-2"><b>Địa chỉ:</b> {{ current_user.dia_chi or "—" }}</div>
-          <div class="mb-2"><b>Role:</b> {{ current_user.role }}</div>
+
+          <div class="mt-3 d-grid gap-2">
+            <a class="btn btn-outline-primary" href="{{ url_for('account.profile') }}">Cập nhật hồ sơ</a>
+            <a class="btn btn-outline-warning" href="{{ url_for('account.change_password') }}">Đổi mật khẩu</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="row g-3 mt-1">
+        <div class="col-12 col-md-6 col-xl-12">
+          <div class="card card-hover">
+            <div class="card-body d-flex justify-content-between align-items-center">
+              <div>
+                <div class="muted">Môn học</div>
+                <div class="fs-3 fw-bold">{{ total_subjects if total_subjects is defined else "--" }}</div>
+              </div>
+              <div class="icon-badge bg-primary-subtle text-primary">📘</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-12">
+          <div class="card card-hover">
+            <div class="card-body d-flex justify-content-between align-items-center">
+              <div>
+                <div class="muted">Bài học</div>
+                <div class="fs-3 fw-bold">{{ total_lessons if total_lessons is defined else "--" }}</div>
+              </div>
+              <div class="icon-badge bg-success-subtle text-success">📚</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: QUICK ACTIONS -->
+    <div class="col-12 col-xl-8">
+      <div class="card card-hover">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <b>Chức năng giáo viên</b>
+          <span class="muted">Điều hướng nhanh</span>
+        </div>
+
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <a class="quick-link" href="{{ url_for('manager.manager_grades') }}">
+                <div class="icon-badge bg-primary-subtle text-primary">📊</div>
+                <div>
+                  <div class="fw-bold">Quản lý bảng điểm</div>
+                  <div class="muted small">Thêm/sửa/xoá, lọc theo SV/Môn/Kỳ thi</div>
+                </div>
+              </a>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <a class="quick-link" href="{{ url_for('manager.manager_exams') }}">
+                <div class="icon-badge bg-warning-subtle text-warning">📝</div>
+                <div>
+                  <div class="fw-bold">Quản lý kỳ thi</div>
+                  <div class="muted small">Tạo kỳ thi theo môn + ngày thi</div>
+                </div>
+              </a>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <a class="quick-link" href="{{ url_for('manager.manager_lessons') }}">
+                <div class="icon-badge bg-success-subtle text-success">📚</div>
+                <div>
+                  <div class="fw-bold">Quản lý bài học</div>
+                  <div class="muted small">Nội dung + video + thứ tự</div>
+                </div>
+              </a>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <a class="quick-link" href="{{ url_for('manager.manager_subjects') }}">
+                <div class="icon-badge bg-info-subtle text-info">📘</div>
+                <div>
+                  <div class="fw-bold">Quản lý môn học</div>
+                  <div class="muted small">Tạo/sửa môn học, tín chỉ</div>
+                </div>
+              </a>
+            </div>
+
+            <div class="col-12">
+              <a class="quick-link" href="{{ url_for('manager.manager_classes') }}">
+                <div class="icon-badge bg-dark-subtle text-dark">🏫</div>
+                <div>
+                  <div class="fw-bold">Quản lý lớp học</div>
+                  <div class="muted small">Tạo lớp, gán môn cho lớp</div>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <div class="d-flex flex-wrap gap-2">
+          </div>
+
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Chức năng giáo viên -->
-  <div class="col-lg-8">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <b>Chức năng giáo viên</b>
-        <span class="text-muted">Điều hướng nhanh</span>
-      </div>
-
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <a class="btn btn-outline-primary w-100 py-3"
-               href="{{ url_for('manager.manager_grades') }}">
-              📊 Quản lý bảng điểm
-            </a>
-          </div>
-
-          <div class="col-md-6">
-            <a class="btn btn-outline-warning w-100 py-3"
-               href="{{ url_for('manager.manager_exams') }}">
-              📝 Quản lý kỳ thi
-            </a>
-          </div>
-
-          <div class="col-md-6">
-            <a class="btn btn-outline-success w-100 py-3"
-               href="{{ url_for('manager.manager_lessons') }}">
-              📚 Quản lý bài học
-            </a>
-          </div>
-
-          <div class="col-md-6">
-            <a class="btn btn-outline-secondary w-100 py-3"
-               href="{{ url_for('manager.manager_subjects') }}">
-              📘 Quản lý môn học
-            </a>
-          </div>
-
-          <div class="col-md-12">
-            <a class="btn btn-outline-dark w-100 py-3"
-               href="{{ url_for('manager.manager_classes') }}">
-              🏫 Quản lý lớp học
-            </a>
-          </div>
-        </div>
-
-        <hr>
-        <small class="text-muted">
-        </small>
-      </div>
-    </div>
-  </div>
 </div>
 
 {% endblock %}
