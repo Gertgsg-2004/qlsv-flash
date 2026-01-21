@@ -1,5 +1,7 @@
 from flask_login import UserMixin
 from extensions import db, bcrypt
+from datetime import datetime
+
 
 # =========================================================
 # Bảng phụ: giáo viên (Student role=manager) <-> lớp (Class)
@@ -234,3 +236,22 @@ class Lesson(db.Model):
 
     def __repr__(self):
         return f"<Lesson id={self.id} subject_id={self.subject_id} title={self.title}>"
+class Notification(db.Model):
+    __tablename__ = "notifications"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    # ai nhận thông báo
+    user_id = db.Column(db.Integer, db.ForeignKey("students.id"), nullable=False)
+
+    title = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.Text, nullable=True)
+
+    # link để bấm chuyển trang (tuỳ chọn)
+    link = db.Column(db.String(255), nullable=True)
+
+    is_read = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    # quan hệ
+    user = db.relationship("Student", backref=db.backref("notifications", lazy=True))

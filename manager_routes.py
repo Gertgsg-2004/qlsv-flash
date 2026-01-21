@@ -585,11 +585,11 @@ def manager_lessons():
     subject_id = request.args.get("subject_id", type=int)
     subjects = Subject.query.order_by(Subject.name.asc()).all()
 
-    q = Lesson.query
+    query = Lesson.query
     if subject_id:
-        q = q.filter(Lesson.subject_id == subject_id)
+        query = query.filter(Lesson.subject_id == subject_id)
 
-    lessons = q.order_by(Lesson.subject_id.asc(), Lesson.order_no.asc(), Lesson.id.asc()).all()
+    lessons = query.order_by(Lesson.subject_id.asc(), Lesson.order_no.asc(), Lesson.id.asc()).all()
 
     return render_template(
         "manager/lessons.html",

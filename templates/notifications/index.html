@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% set title="Thông báo" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">Thông báo</h4>
+
+  <form method="POST" action="{{ url_for('noti.mark_all_read') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-sm btn-outline-secondary">Đánh dấu đã đọc tất cả</button>
+  </form>
+</div>
+
+{% if not items %}
+  <div class="alert alert-info">Chưa có thông báo nào.</div>
+{% else %}
+  <div class="list-group">
+    {% for n in items %}
+      <div class="list-group-item">
+        <div class="d-flex justify-content-between">
+          <div>
+            <b>{% if not n.is_read %}🔔{% endif %} {{ n.title }}</b>
+            <div class="text-muted small">{{ n.created_at }}</div>
+          </div>
+
+          {% if not n.is_read %}
+          <form method="POST" action="{{ url_for('noti.mark_read', noti_id=n.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-outline-success">Đã đọc</button>
+          </form>
+          {% endif %}
+        </div>
+
+        {% if n.content %}
+          <div class="mt-2">{{ n.content }}</div>
+        {% endif %}
+
+        {% if n.link %}
+          <a class="btn btn-sm btn-link px-0" href="{{ n.link }}">Mở</a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<a class="btn btn-outline-secondary mt-3" href="javascript:history.back()">Quay lại</a>
+
+{% endblock %}

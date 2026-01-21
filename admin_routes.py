@@ -265,7 +265,7 @@ def admin_class_create():
     description = (request.form.get("description") or "").strip()
 
     subject_ids = request.form.getlist("subject_ids")
-    subject_ids = [int(x) for x in subject_ids if x.isdigit()]
+    subject_ids = [int(x) for x in subject_ids if str(x).isdigit()]
 
     if not code or not name:
         flash("Vui lòng nhập Code và Tên lớp.", "danger")
@@ -313,7 +313,7 @@ def admin_class_edit(class_id: int):
     description = (request.form.get("description") or "").strip()
 
     subject_ids = request.form.getlist("subject_ids")
-    subject_ids = [int(x) for x in subject_ids if x.isdigit()]
+    subject_ids = [int(x) for x in subject_ids if str(x).isdigit()]
 
     if not code or not name:
         flash("Vui lòng nhập Code và Tên lớp.", "danger")
@@ -525,153 +525,6 @@ def admin_grades():
     )
 
 
-@admin_bp.route("/grades/new", methods=["GET", "POST"])
-@login_required
-@roles_required("admin")
-def admin_grade_create():
-    if request.method == "GET":
-        students = Student.query.order_by(Student.id.desc()).all()
-        subjects = Subject.query.order_by(Subject.id.desc()).all()
-        exams = Exam.query.order_by(Exam.id.desc()).all()
-        return render_template(
-            "admin/grade_form.html",
-            mode="create",
-            g=None,
-            students=students,
-            subjects=subjects,
-            exams=exams
-        )
-
-    bad = _csrf_or_flash("admin.admin_grade_create")
-    if bad:
-        return bad
-
-    student_id = request.form.get("student_id", "")
-    subject_id = request.form.get("subject_id", "")
-    exam_id = request.form.get("exam_id", "")
-    score_raw = (request.form.get("score") or "").strip()
-    note = (request.form.get("note") or "").strip()
-
-    if not (student_id.isdigit() and subject_id.isdigit() and exam_id.isdigit()):
-        flash("Vui lòng chọn Sinh viên / Môn / Kỳ thi hợp lệ.", "danger")
-        return redirect(url_for("admin.admin_grade_create"))
-
-    try:
-        score = float(score_raw)
-    except Exception:
-        flash("Điểm không hợp lệ (phải là số).", "danger")
-        return redirect(url_for("admin.admin_grade_create"))
-
-    if score < 0 or score > 10:
-        flash("Điểm phải nằm trong khoảng 0 - 10.", "danger")
-        return redirect(url_for("admin.admin_grade_create"))
-
-    exists = Grade.query.filter_by(
-        student_id=int(student_id),
-        subject_id=int(subject_id),
-        exam_id=int(exam_id),
-    ).first()
-    if exists:
-        flash("Điểm đã tồn tại cho SV - Môn - Kỳ thi này.", "danger")
-        return redirect(url_for("admin.admin_grade_create"))
-
-    g = Grade(
-        student_id=int(student_id),
-        subject_id=int(subject_id),
-        exam_id=int(exam_id),
-        score=score,
-        note=note or None,
-    )
-    db.session.add(g)
-    db.session.commit()
-    flash("Đã thêm điểm!", "success")
-    return redirect(url_for("admin.admin_grades"))
-
-
-@admin_bp.route("/grades/<int:grade_id>/edit", methods=["GET", "POST"])
-@login_required
-@roles_required("admin")
-def admin_grade_edit(grade_id: int):
-    g = Grade.query.get(grade_id)
-    if not g:
-        abort(404)
-
-    if request.method == "GET":
-        students = Student.query.order_by(Student.id.desc()).all()
-        subjects = Subject.query.order_by(Subject.id.desc()).all()
-        exams = Exam.query.order_by(Exam.id.desc()).all()
-        return render_template(
-            "admin/grade_form.html",
-            mode="edit",
-            g=g,
-            students=students,
-            subjects=subjects,
-            exams=exams
-        )
-
-    bad = _csrf_or_flash("admin.admin_grade_edit", grade_id=grade_id)
-    if bad:
-        return bad
-
-    student_id = request.form.get("student_id", "")
-    subject_id = request.form.get("subject_id", "")
-    exam_id = request.form.get("exam_id", "")
-    score_raw = (request.form.get("score") or "").strip()
-    note = (request.form.get("note") or "").strip()
-
-    if not (student_id.isdigit() and subject_id.isdigit() and exam_id.isdigit()):
-        flash("Vui lòng chọn Sinh viên / Môn / Kỳ thi hợp lệ.", "danger")
-        return redirect(url_for("admin.admin_grade_edit", grade_id=grade_id))
-
-    try:
-        score = float(score_raw)
-    except Exception:
-        flash("Điểm không hợp lệ (phải là số).", "danger")
-        return redirect(url_for("admin.admin_grade_edit", grade_id=grade_id))
-
-    if score < 0 or score > 10:
-        flash("Điểm phải nằm trong khoảng 0 - 10.", "danger")
-        return redirect(url_for("admin.admin_grade_edit", grade_id=grade_id))
-
-    exists = Grade.query.filter(
-        Grade.student_id == int(student_id),
-        Grade.subject_id == int(subject_id),
-        Grade.exam_id == int(exam_id),
-        Grade.id != g.id
-    ).first()
-    if exists:
-        flash("Bị trùng: đã có điểm cho SV - Môn - Kỳ thi này.", "danger")
-        return redirect(url_for("admin.admin_grade_edit", grade_id=grade_id))
-
-    g.student_id = int(student_id)
-    g.subject_id = int(subject_id)
-    g.exam_id = int(exam_id)
-    g.score = score
-    g.note = note or None
-
-    db.session.commit()
-    flash("Đã cập nhật điểm!", "success")
-    return redirect(url_for("admin.admin_grades"))
-
-
-@admin_bp.post("/grades/<int:grade_id>/delete")
-@login_required
-@roles_required("admin")
-def admin_grade_delete(grade_id: int):
-    g = Grade.query.get(grade_id)
-    if not g:
-        abort(404)
-
-    bad = _csrf_or_flash("admin.admin_grades")
-    if bad:
-        return bad
-
-    db.session.delete(g)
-    db.session.commit()
-    flash("Đã xoá điểm!", "success")
-    return redirect(url_for("admin.admin_grades"))
-
-
 # =========================================================
 # LESSONS
 # =========================================================
@@ -696,97 +549,8 @@ def admin_lessons():
     )
 
 
-@admin_bp.route("/lessons/new", methods=["GET", "POST"])
-@login_required
-@roles_required("admin")
-def admin_lessons_create():
-    subjects = Subject.query.order_by(Subject.name.asc()).all()
-    if not subjects:
-        flash("Chưa có môn học. Hãy tạo môn học trước!", "warning")
-        return redirect(url_for("admin.admin_subjects"))
-
-    if request.method == "POST":
-        bad = _csrf_or_flash("admin.admin_lessons_create")
-        if bad:
-            return bad
-
-        subject_id = int(request.form.get("subject_id"))
-        title = (request.form.get("title") or "").strip()
-        content = (request.form.get("content") or "").strip()
-        video_url = (request.form.get("video_url") or "").strip()
-        order_no = request.form.get("order_no", type=int) or 1
-
-        if not title:
-            flash("Tiêu đề bài học không được trống.", "danger")
-            return render_template("admin/lesson_form.html", mode="create", subjects=subjects, lesson=None)
-
-        lesson = Lesson(
-            subject_id=subject_id,
-            title=title,
-            content=content or None,
-            video_url=video_url or None,
-            order_no=order_no
-        )
-        db.session.add(lesson)
-        db.session.commit()
-        flash("Đã thêm bài học!", "success")
-        return redirect(url_for("admin.admin_lessons"))
-
-    return render_template("admin/lesson_form.html", mode="create", subjects=subjects, lesson=None)
-
-
-@admin_bp.route("/lessons/<int:lesson_id>/edit", methods=["GET", "POST"])
-@login_required
-@roles_required("admin")
-def admin_lessons_edit(lesson_id: int):
-    lesson = Lesson.query.get(lesson_id)
-    if not lesson:
-        abort(404)
-
-    subjects = Subject.query.order_by(Subject.name.asc()).all()
-
-    if request.method == "POST":
-        bad = _csrf_or_flash("admin.admin_lessons_edit", lesson_id=lesson_id)
-        if bad:
-            return bad
-
-        lesson.subject_id = int(request.form.get("subject_id"))
-        lesson.title = (request.form.get("title") or "").strip()
-        lesson.content = (request.form.get("content") or "").strip() or None
-        lesson.video_url = (request.form.get("video_url") or "").strip() or None
-        lesson.order_no = request.form.get("order_no", type=int) or 1
-
-        if not lesson.title:
-            flash("Tiêu đề bài học không được trống.", "danger")
-            return render_template("admin/lesson_form.html", mode="edit", subjects=subjects, lesson=lesson)
-
-        db.session.commit()
-        flash("Đã cập nhật bài học!", "success")
-        return redirect(url_for("admin.admin_lessons"))
-
-    return render_template("admin/lesson_form.html", mode="edit", subjects=subjects, lesson=lesson)
-
-
-@admin_bp.post("/lessons/<int:lesson_id>/delete")
-@login_required
-@roles_required("admin")
-def admin_lessons_delete(lesson_id: int):
-    lesson = Lesson.query.get(lesson_id)
-    if not lesson:
-        abort(404)
-
-    bad = _csrf_or_flash("admin.admin_lessons")
-    if bad:
-        return bad
-
-    db.session.delete(lesson)
-    db.session.commit()
-    flash("Đã xoá bài học!", "success")
-    return redirect(url_for("admin.admin_lessons"))
-
-
 # =========================================================
-# STUDENTS (ADMIN FULL: list/create/edit/delete/avatar/import/export/report)
+# STUDENTS (ADMIN FULL)
 # =========================================================
 @admin_bp.get("/students")
 @login_required
@@ -815,7 +579,7 @@ def admin_students_index():
     pagination = query.order_by(Student.id.asc()).paginate(page=page, per_page=per_page, error_out=False)
 
     return render_template(
-        "admin/index.html",  # bạn đang để students ở admin/index.html
+        "admin/students.html",   # ✅ đúng file bạn đang dùng
         students=pagination.items,
         pagination=pagination,
         ma_sv=q_ma,
@@ -829,7 +593,7 @@ def admin_students_index():
 @roles_required("admin")
 def admin_students_create():
     if request.method == "GET":
-        return render_template("admin/form.html", mode="create", student=None)
+        return render_template("admin/student_form.html", mode="create", student=None)  # ✅ đúng file
 
     bad = _csrf_or_flash("admin.admin_students_create")
     if bad:
@@ -885,7 +649,7 @@ def admin_students_edit(student_id: int):
         abort(404)
 
     if request.method == "GET":
-        return render_template("admin/form.html", mode="edit", student=sv)
+        return render_template("admin/student_form.html", mode="edit", student=sv)  # ✅ đúng file
 
     bad = _csrf_or_flash("admin.admin_students_edit", student_id=student_id)
     if bad:
@@ -1004,6 +768,7 @@ def admin_students_export():
     ws.append(EXPORT_HEADERS)
 
     for s in Student.query.order_by(Student.id.asc()).all():
+        # NOTE: export mật khẩu random chỉ để test/import lại, không ảnh hưởng DB
         new_plain_password = _random_password(10)
         ws.append([
             s.ma_sv,
@@ -1109,8 +874,12 @@ def admin_students_report():
     nam = Student.query.filter(Student.gioi_tinh == "Nam").count()
     nu = Student.query.filter(Student.gioi_tinh == "Nữ").count()
     khac = total - nam - nu
-
     return render_template("admin/report.html", total=total, nam=nam, nu=nu, khac=khac)
+
+
+# =========================================================
+# TEACHERS (gán lớp cho giáo viên)
+# =========================================================
 @admin_bp.get("/teachers")
 @login_required
 @roles_required("admin")
@@ -1128,8 +897,9 @@ def admin_teacher_update_classes(teacher_id: int):
     if not teacher or teacher.role != "manager":
         abort(404)
 
-    token = request.form.get("csrf_token", "")
-    validate_csrf(token)
+    bad = _csrf_or_flash("admin.admin_teachers")
+    if bad:
+        return bad
 
     class_ids = request.form.getlist("class_ids")
     class_ids = [int(x) for x in class_ids if str(x).isdigit()]
@@ -1139,4 +909,3 @@ def admin_teacher_update_classes(teacher_id: int):
 
     flash("Đã cập nhật lớp phụ trách cho giáo viên!", "success")
     return redirect(url_for("admin.admin_teachers"))
-

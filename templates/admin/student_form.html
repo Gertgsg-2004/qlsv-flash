@@ -8,17 +8,17 @@
   </div>
 
   <div class="card-body">
-    <form method="post">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <div class="mb-3">
-        <label class="form-label">Mã SV</label>
+        <label class="form-label">Mã sinh viên</label>
         <input class="form-control" name="ma_sv"
                value="{{ student.ma_sv if student else '' }}" required>
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Tên SV</label>
+        <label class="form-label">Họ và tên</label>
         <input class="form-control" name="ten_sv"
                value="{{ student.ten_sv if student else '' }}" required>
       </div>
@@ -31,7 +31,7 @@
 
       <div class="mb-3">
         <label class="form-label">
-          Mật khẩu {% if mode=="edit" %}(để trống nếu không đổi){% endif %}
+          Mật khẩu {% if mode=="edit" %}(bỏ trống nếu không đổi){% endif %}
         </label>
         <input class="form-control" type="password" name="mat_khau"
                {% if mode=="create" %}required{% endif %}>
@@ -41,10 +41,10 @@
         <label class="form-label">Giới tính</label>
         {% set gt = student.gioi_tinh if student else "" %}
         <select class="form-select" name="gioi_tinh">
-          <option value="" {{ "selected" if not gt else "" }}>--</option>
-          <option value="Nam" {{ "selected" if gt=="Nam" else "" }}>Nam</option>
-          <option value="Nữ" {{ "selected" if gt=="Nữ" else "" }}>Nữ</option>
-          <option value="Khác" {{ "selected" if gt=="Khác" else "" }}>Khác</option>
+          <option value="" {% if not gt %}selected{% endif %}>--</option>
+          <option value="Nam" {% if gt=="Nam" %}selected{% endif %}>Nam</option>
+          <option value="Nữ" {% if gt=="Nữ" %}selected{% endif %}>Nữ</option>
+          <option value="Khác" {% if gt=="Khác" %}selected{% endif %}>Khác</option>
         </select>
       </div>
 
@@ -55,10 +55,11 @@
       </div>
 
       <div class="d-flex gap-2">
-        <button class="btn btn-primary" type="submit">
+        <button class="btn btn-primary">
           {{ "Thêm" if mode=="create" else "Lưu" }}
         </button>
-        <a class="btn btn-secondary" href="{{ url_for('admin.admin_students_index') }}">
+        <a class="btn btn-secondary"
+           href="{{ url_for('admin.admin_students_index') }}">
           Quay lại
         </a>
       </div>

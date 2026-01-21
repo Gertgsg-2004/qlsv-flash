@@ -3,52 +3,65 @@ from __future__ import annotations
 
 import os
 import uuid
-from werkzeug.utils import secure_filename
-
-from flask import (
-    Blueprint, render_template, request, redirect,
-    url_for, flash, current_app, abort
-)
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from flask_wtf.csrf import validate_csrf
+from werkzeug.utils import secure_filename
 
 from extensions import db
 from models import Student
 
 account_bp = Blueprint("account", __name__, url_prefix="/account")
 
-ALLOWED_EXTS = {"png", "jpg", "jpeg", "gif", "webp"}
+ALLOWED_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 
 
-def _allowed_file(filename: str) -> bool:
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTS
-
-
-def _home_url():
-    role = (getattr(current_user, "role", "student") or "student").strip().lower()
-    if role == "admin":
-        return url_for("admin.admin_home")
-    if role == "manager":
-        return url_for("manager.manager_home")
-    return url_for("student.student_home")
+def _upload_dir() -> str:
+    path = os.path.join(current_app.root_path, "static", "uploads")
+    os.makedirs(path, exist_ok=True)
+    return path
 
 
 @account_bp.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
-    # luôn truyền home_url để template có nút "Quay lại"
-    home_url = _home_url()
-
     if request.method == "GET":
-        return render_template("account/profile.html", home_url=home_url)
+        return render_template("account/profile.html")
 
     # POST
     validate_csrf(request.form.get("csrf_token", ""))
 
-    # ---------- cập nhật thông tin ----------
+    # ========== 1) Nếu có upload avatar ==========
+    f = request.files.get("avatar")
+    if f and f.filename:
+        filename = secure_filename(f.filename)
+        ext = os.path.splitext(filename)[1].lower()
+
+        if ext not in ALLOWED_EXTS:
+            flash("Chỉ nhận ảnh: PNG/JPG/JPEG/GIF/WEBP", "danger")
+            return redirect(url_for("account.profile"))
+
+        # xóa ảnh cũ
+        if current_user.avatar:
+            old_path = os.path.join(_upload_dir(), current_user.avatar)
+            if os.path.exists(old_path):
+                try:
+                    os.remove(old_path)
+                except Exception:
+                    pass
+
+        new_name = f"{uuid.uuid4().hex}{ext}"
+        f.save(os.path.join(_upload_dir(), new_name))
+
+        current_user.avatar = new_name
+        db.session.commit()
+        flash("Đã cập nhật ảnh đại diện!", "success")
+        return redirect(url_for("account.profile"))
+
+    # ========== 2) Nếu không upload avatar -> update info ==========
     ten_sv = (request.form.get("ten_sv") or "").strip()
     email = (request.form.get("email") or "").strip()
-    gioi_tinh = (request.form.get("gioi_tinh") or "").strip()  # Nam/Nữ/Khác/...
+    gioi_tinh = (request.form.get("gioi_tinh") or "").strip()
     dia_chi = (request.form.get("dia_chi") or "").strip()
 
     if not ten_sv:
@@ -59,7 +72,6 @@ def profile():
         flash("Email không được để trống.", "danger")
         return redirect(url_for("account.profile"))
 
-    # Nếu đổi email -> check trùng (trừ chính mình)
     exist = Student.query.filter(Student.email == email, Student.id != current_user.id).first()
     if exist:
         flash("Email đã được dùng bởi tài khoản khác.", "danger")
@@ -70,36 +82,6 @@ def profile():
     current_user.gioi_tinh = gioi_tinh or None
     current_user.dia_chi = dia_chi or None
 
-    # ---------- upload avatar (nếu có) ----------
-    file = request.files.get("avatar")
-    if file and file.filename:
-        if not _allowed_file(file.filename):
-            flash("Avatar chỉ nhận png/jpg/jpeg/gif/webp.", "danger")
-            return redirect(url_for("account.profile"))
-
-        ext = file.filename.rsplit(".", 1)[1].lower()
-        new_name = secure_filename(f"{uuid.uuid4().hex}.{ext}")
-
-        upload_folder = current_app.config.get("UPLOAD_FOLDER")
-        if not upload_folder:
-            flash("Thiếu cấu hình UPLOAD_FOLDER trong app.py", "danger")
-            return redirect(url_for("account.profile"))
-
-        os.makedirs(upload_folder, exist_ok=True)
-        save_path = os.path.join(upload_folder, new_name)
-        file.save(save_path)
-
-        # xóa avatar cũ
-        if getattr(current_user, "avatar", None):
-            old_path = os.path.join(upload_folder, current_user.avatar)
-            if os.path.exists(old_path):
-                try:
-                    os.remove(old_path)
-                except Exception:
-                    pass
-
-        current_user.avatar = new_name
-
     db.session.commit()
     flash("Đã cập nhật hồ sơ!", "success")
     return redirect(url_for("account.profile"))
@@ -108,10 +90,8 @@ def profile():
 @account_bp.route("/change-password", methods=["GET", "POST"])
 @login_required
 def change_password():
-    home_url = _home_url()
-
     if request.method == "GET":
-        return render_template("account/change_password.html", home_url=home_url)
+        return render_template("account/change_password.html")
 
     validate_csrf(request.form.get("csrf_token", ""))
 

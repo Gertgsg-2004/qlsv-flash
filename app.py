@@ -30,6 +30,9 @@ from wtforms.validators import DataRequired, Email, Optional as Opt, Length, Val
 
 from extensions import db, bcrypt, csrf  # ✅ chỉ dùng extensions
 from account_routes import account_bp
+from notifications_routes import noti_bp
+
+
 
 
 # -------------------------
@@ -70,7 +73,7 @@ login_manager.login_view = "login"
 serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
 # ✅ IMPORT MODEL 1 LẦN DUY NHẤT
-from models import Student  # Student nằm ở models.py
+from models import Notification, Student  # Student nằm ở models.py
 
 # ✅ tạo bảng + seed admin (chạy 1 lần)
 with app.app_context():
@@ -94,6 +97,7 @@ app.register_blueprint(manager_bp)
 app.register_blueprint(student_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(account_bp)
+app.register_blueprint(noti_bp)
 
 
 # -------------------------
@@ -706,3 +710,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024  # 2MB
+@app.context_processor
+def inject_noti_count():
+    if current_user.is_authenticated:
+        count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
+        return {"noti_unread_count": count}
+    return {"noti_unread_count": 0}
